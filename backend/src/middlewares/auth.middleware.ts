@@ -6,10 +6,13 @@ const JWT_SECRET = process.env.JWT_SECRET as string || "myJWTsecretKey"
 
 export const authMiddleware = async (c: Context, next: Next) => {
     try {
-
         const token = getCookie(c, 'token')
+        if (!token) {
+            console.log('No token found in cookies')
+            return c.json({ error: 'Unauthorized: No token provided' }, 401)
+        }
         const user = await verify(token as string, JWT_SECRET)
-        c.set("userId", user);
+        c.set("user", user);
         console.log("user valid")
         await next();
 

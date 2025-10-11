@@ -8,12 +8,15 @@ import { cameraRoute } from "./routes/camera.routes";
 const app = new Hono();
 dotenv.config()
 
-// const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-app.use(cors({
-    // origin: FRONTEND_URL,
-    origin: "*",
+app.use('*',cors({
+    origin: 'http://localhost:5173',
+    credentials:true,
+    // origin: "*",
 }))
+
+// app.use(cors())
 
 app.get('/', (c) => c.text('Camsync is running...'));
 

@@ -1,5 +1,5 @@
 import { Context } from "hono"
-import { decode, sign, verify } from 'hono/jwt'
+import { sign } from 'hono/jwt'
 import { PrismaClient } from "@prisma/client"
 import dotenv from "dotenv"
 import { setCookie } from 'hono/cookie'
@@ -11,23 +11,22 @@ const prisma = new PrismaClient()
 const JWT_SECRET = process.env.JWT_SECRET as string || "myJWTsecretKey"
 
 export const userSignIn = async (c: Context) => {
-    const { email, password } = c.req.queries()
-
+    const { email, password } = await c.req.json();
+    console.log(email, password);
     try {
-        const existingUser = await prisma.user.findUnique({ where: { email: email[0] } })
-
+        const existingUser = await prisma.user.findUnique({ where: { email: email } })
         if (existingUser) {
-            const valid = await bcrypt.compare(password[0], existingUser.password)
-            if (!valid) return c.json({ error: 'User already exist and invalid password' }, 401)
+            const valid = await bcrypt.compare(password, existingUser.password)
+            if (!valid) return c.json({ success: false, message: 'User already exist and invalid password' })
 
             const token = await sign({ id: existingUser.id, email: existingUser.email }, JWT_SECRET)
 
             setCookie(c, 'token', token, {
                 httpOnly: true,
                 path: '/',
-                maxAge: 3600,
-                sameSite: 'none',
-                secure: process.env.NODE_ENV === 'production',
+                maxAge: 3600*24,
+                sameSite: 'lax',
+                secure: false,
             })
 
             return c.json({
@@ -39,7 +38,7 @@ export const userSignIn = async (c: Context) => {
 
         }
 
-        const hasdedPasword = await bcrypt.hash(password[0], 10);
+        const hasdedPasword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
                 email: email[0],
@@ -56,9 +55,9 @@ export const userSignIn = async (c: Context) => {
         setCookie(c, 'token', token, {
             httpOnly: true,
             path: '/',
-            maxAge: 3600,
-            sameSite: 'none',
-            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600*24,
+            sameSite: 'lax',
+            secure: false,
         })
 
         return c.json({
@@ -74,14 +73,16 @@ export const userSignIn = async (c: Context) => {
 
 
 export const userLogin = async (c: Context) => {
+    console.log("hi")
     const { email, password } = c.req.queries()
 
     try {
+        console.log("hi")
         const user = await prisma.user.findUnique({ where: { email: email[0] } })
         if (!user) {
             return c.json({ success: false, message: "Invalid Credentials" });
         }
-
+        
         const valid = await bcrypt.compare(password[0], user.password)
         if (!valid) {
             return c.json({ success: false, message: "Invalid Password" })
@@ -96,9 +97,9 @@ export const userLogin = async (c: Context) => {
         setCookie(c, 'token', token, {
             httpOnly: true,
             path: '/',
-            maxAge: 3600,
-            sameSite: 'none',
-            secure: process.env.NODE_ENV === 'production',
+            maxAge: 3600*24,
+            sameSite: 'lax',
+            secure: false,
         })
 
         return c.json({
@@ -110,5 +111,24 @@ export const userLogin = async (c: Context) => {
 
     } catch (error) {
         return c.json({ success: false, message: 'Internal Server Error LogIn' }, 500)
+    }
+}
+
+export const userVerify = async (c: Context) => {
+    try {
+        const userinfo = c.get('user')
+        const user = await prisma.user.findUnique({
+            where: {
+                email: userinfo.email,
+            },
+            select: {
+                id: true,
+                email: true,
+            }
+        })
+        return c.json({ success: true, user })
+
+    } catch (error) {
+        return c.json({ success: false, message: 'Internal Server Error userVerify' }, 500)
     }
 }
