@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,8 +8,41 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password      String?
-  createdAt DateTime @default(now())
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String?
+  createdAt DateTime  @default(now())
+
+  cameras   Camera[]
+}
+
+model Camera {
+  id            Int       @id @default(autoincrement())
+  name          String
+  rtspUrl       String    @unique
+  location      String?
+  enabled       Boolean    @default(false)
+  faceDetection Boolean    @default(true)
+  fps           Int        @default(15)
+  lastStartedAt DateTime?
+  lastStoppedAt DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  metadata      Json?
+
+  userId Int
+  user   User      @relation(fields: [userId], references: [id])
+  alerts Alert[]
+}
+
+model Alert {
+  id          Int       @id @default(autoincrement())
+  cameraId    Int
+  timestamp   DateTime  @default(now())
+  description String?
+  snapshotUrl String?
+  boundingBox Json?
+  metadata    Json?
+
+  camera      Camera    @relation(fields: [cameraId], references: [id])
 }

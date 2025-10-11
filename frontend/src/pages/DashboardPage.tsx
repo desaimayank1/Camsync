@@ -1,14 +1,10 @@
 import React from "react";
 import CameraCard from "../components/CameraCard";
 import { Button } from "@mui/material";
+import { useCameraStore } from "../store/useUserStore";
 
 const DashboardPage: React.FC = () => {
-  const cameras = [
-    { name: "Front Door", status: "LIVE", lastDetected: "2m ago" },
-    { name: "Backyard", status: "OFFLINE" },
-    { name: "Living Room", status: "LIVE", lastDetected: "5m ago" },
-    { name: "Garage", status: "FAILED" },
-  ] as const;
+  const {cameras} =useCameraStore()
 
   return (
     <div className="flex min-h-screen bg-gray-50">

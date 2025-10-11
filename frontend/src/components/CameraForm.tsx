@@ -1,23 +1,46 @@
 import React, { useState } from "react";
-import { TextField, Button, Alert } from "@mui/material";
+import { TextField, Button } from "@mui/material";
+import axios from "axios";
+import { useCameraStore } from "../store/useUserStore";
 
-interface CameraFormProps {
-  onSave: (camera: { name: string; rtsp: string; location: string }) => void;
-}
 
-const CameraForm: React.FC<CameraFormProps> = ({ onSave }) => {
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
+const CameraForm: React.FC = () => {
   const [cameraName, setCameraName] = useState("");
   const [rtspUrl, setRtspUrl] = useState("");
   const [location, setLocation] = useState("");
-  const [error, setError] = useState(false);
+  const {addCamera}=useCameraStore()
+  const [msg ,setMsg]=useState("");
+  const [error ,setError]=useState(false);
 
-  const handleSave = () => {
-    if (!rtspUrl.startsWith("rtsp://")) {
-      setError(true);
-      return;
+  const handleSave = async () => {
+    setMsg("")
+    if (cameraName && location && rtspUrl) {
+      try {
+        const response = await axios.post(`${BACKEND_URL}/camera/add`, {
+            cameraName: cameraName,
+            rtspUrl: rtspUrl,
+            location:location
+          }, {
+          withCredentials: true,
+        })
+
+        const data = response.data;
+        if (data.success) {
+           addCamera(data.camera)
+           setError(false)
+           setCameraName("")
+           setLocation("")
+           setRtspUrl("")
+        }else{
+          setError(true)
+        }
+        setMsg(data.message);
+      } catch (error) {
+        console.log("error adding camera ", error);
+      }
     }
-    setError(false);
-    onSave({ name: cameraName, rtsp: rtspUrl, location });
   };
 
   return (
@@ -42,13 +65,6 @@ const CameraForm: React.FC<CameraFormProps> = ({ onSave }) => {
         fullWidth
       />
 
-      {error && (
-        <Alert severity="error">
-          Could not connect to the camera. Please check the RTSP URL and ensure
-          the camera is online.
-        </Alert>
-      )}
-
       <div className="flex justify-end gap-3">
         <Button variant="outlined" color="secondary">
           Cancel
@@ -56,7 +72,8 @@ const CameraForm: React.FC<CameraFormProps> = ({ onSave }) => {
         <Button variant="contained" color="primary" onClick={handleSave}>
           Save Camera
         </Button>
-      </div>
+      </div> 
+       {msg && <span className={`${error?"text-red-600":"text-green-400"}`}>{msg}</span>}
     </div>
   );
 };

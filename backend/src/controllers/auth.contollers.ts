@@ -41,7 +41,7 @@ export const userSignIn = async (c: Context) => {
         const hasdedPasword = await bcrypt.hash(password, 10);
         const user = await prisma.user.create({
             data: {
-                email: email[0],
+                email: email,
                 password: hasdedPasword,
             }
         })

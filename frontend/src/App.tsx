@@ -7,7 +7,7 @@ import AlertPage from "./pages/AlertPage";
 import MainLayout from "./MainLayout";
 import SignupPage from "./pages/SignInPage";
 import Protected from "./components/Protected";
-import { useUserStore } from "./store/useUserStore";
+import { useUserStore,useCameraStore } from "./store/useUserStore";
 import GuestRoute from "./components/GuestRoute";
 
 
@@ -28,9 +28,15 @@ const router = createBrowserRouter([
 
 const App: React.FC = () => {
   const {fetchUser} = useUserStore()
+  const {fetchCameras} = useCameraStore()
+  
   useEffect(() => {
     fetchUser();
   }, [fetchUser]);
+
+  useEffect(() => {
+    fetchCameras();
+  }, [fetchCameras]);
 
   return <RouterProvider router={router} />;
 };

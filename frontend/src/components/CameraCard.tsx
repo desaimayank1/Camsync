@@ -2,16 +2,32 @@ import React from "react";
 import { Button, Alert } from "@mui/material";
 
 interface CameraCardProps {
+  id: number;
   name: string;
-  status: "LIVE" | "OFFLINE" | "FAILED";
-  lastDetected?: string;
+  location?: string;
+  enabled: boolean;
+  faceDetection: boolean;
+  fps?: number;
+  rtspUrl?: string;
+  metadata?: Record<string, any>;
 }
 
-const CameraCard: React.FC<CameraCardProps> = ({ name, status, lastDetected }) => {
+const CameraCard: React.FC<CameraCardProps> = ({
+  name,
+  enabled,
+  faceDetection,
+  metadata,
+}) => {
+  let status: "LIVE" | "OFFLINE" | "FAILED" = "OFFLINE";
+
+  if (enabled) {
+    status = faceDetection ? "LIVE" : "FAILED";
+  }
+
+  const lastDetected = metadata?.lastDetectedTime || "No recent activity";
+
   return (
-    <div
-      className={`p-4 rounded-xl shadow-md bg-white w-full md:w-[45%] lg:w-[30%] flex flex-col`}
-    >
+    <div className="p-4 rounded-xl shadow-md bg-white w-full md:w-[45%] lg:w-[30%] flex flex-col">
       <div className="flex justify-between items-center mb-3">
         <h3 className="font-semibold text-gray-800">{name}</h3>
         <span
