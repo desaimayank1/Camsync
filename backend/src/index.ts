@@ -35,6 +35,6 @@ app.notFound((c) => {
 if (process.env.NODE_ENV !== 'production') {
   serve({
   fetch: app.fetch,
-  port: 3000,
+  port: 4000,
 })
 }

@@ -1,0 +1,6 @@
+paths:
+  ~^([a-zA-Z0-9_]+)/cam([1-6])$:
+    source: publisher
+    publishUser: admin
+    publishPass: admin123
+    runOnReady: echo "User $1 - Camera $2 stream started"
